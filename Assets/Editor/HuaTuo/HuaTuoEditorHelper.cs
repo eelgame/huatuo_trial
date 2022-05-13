@@ -25,6 +25,7 @@ namespace HuaTuo
         [InitializeOnLoadMethod]
         private static void Setup()
         {
+            PlayerSettings.SetAdditionalIl2CppArgs("--generate-cmake=il2cpp");
         //     Environment.SetEnvironmentVariable("UNITYLINKER_ADDITIONAL_ARGS",
         //         $"--include-assembly={Path.Combine(Environment.CurrentDirectory, "Temp/StagingArea/Data/Managed/HotFix.dll")},{Path.Combine(Environment.CurrentDirectory, "Temp/StagingArea/Data/Managed/HotFix2.dll")}");
         }
@@ -132,42 +133,42 @@ namespace HuaTuo
         {
             CreateDirIfNotExists(tempDir);
             CreateDirIfNotExists(outputDir);
-
-            List<string> notSceneAssets = new List<string>();
-
-            CompileDll(GetDllBuildOutputDirByTarget(target), target);
-
-            var hotfixDlls = new List<string>()
-            {
-                "HotFix.dll",
-                "HotFix2.dll",
-            };
-
-            foreach(var dll in hotfixDlls)
-            {
-                string dllPath = $"{GetDllBuildOutputDirByTarget(target)}/{dll}";
-                string dllBytesPath = $"{tempDir}/{dll}.bytes";
-                File.Copy(dllPath, dllBytesPath, true);
-                notSceneAssets.Add(dllBytesPath);
-            }
-
-
-            string testPrefab = $"{Application.dataPath}/Prefabs/HotUpdatePrefab.prefab";
-            notSceneAssets.Add(testPrefab);
-            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+            //
+            // List<string> notSceneAssets = new List<string>();
+            //
+            // CompileDll(GetDllBuildOutputDirByTarget(target), target);
+            //
+            // var hotfixDlls = new List<string>()
+            // {
+            //     "HotFix.dll",
+            //     "HotFix2.dll",
+            // };
+            //
+            // foreach(var dll in hotfixDlls)
+            // {
+            //     string dllPath = $"{GetDllBuildOutputDirByTarget(target)}/{dll}";
+            //     string dllBytesPath = $"{tempDir}/{dll}.bytes";
+            //     File.Copy(dllPath, dllBytesPath, true);
+            //     notSceneAssets.Add(dllBytesPath);
+            // }
+            //
+            //
+            // string testPrefab = $"{Application.dataPath}/Prefabs/HotUpdatePrefab.prefab";
+            // notSceneAssets.Add(testPrefab);
+            // AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 
 
 
             List<AssetBundleBuild> abs = new List<AssetBundleBuild>();
-            AssetBundleBuild notSceneAb = new AssetBundleBuild
-            {
-                assetBundleName = "common",
-                assetNames = notSceneAssets.Select(s => ToReleateAssetPath(s)).ToArray(),
-            };
-            abs.Add(notSceneAb);
+            // AssetBundleBuild notSceneAb = new AssetBundleBuild
+            // {
+            //     assetBundleName = "common",
+            //     assetNames = notSceneAssets.Select(s => ToReleateAssetPath(s)).ToArray(),
+            // };
+            // abs.Add(notSceneAb);
 
 
-            string testScene = $"{Application.dataPath}/Scenes/HotUpdateScene.unity";
+            string testScene = $"{Application.dataPath}/2048/Scenes/GameScene.unity";
             string[] sceneAssets =
             {
                 testScene,

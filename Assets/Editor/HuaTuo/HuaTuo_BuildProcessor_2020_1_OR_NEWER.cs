@@ -11,6 +11,7 @@ using System.IO;
 using System;
 using UnityEditor.UnityLinker;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Mono.Cecil;
 using UnityEditor.Il2Cpp;
 #if UNITY_ANDROID
@@ -51,7 +52,7 @@ namespace HuaTuo
         /// </summary>
         static List<string> s_monoHotUpdateDllNames = new List<string>()
         {
-            "HotFix.dll",
+            "2048.dll",
         };
 
 
@@ -61,7 +62,6 @@ namespace HuaTuo
         public static List<string> s_allHotUpdateDllNames = s_monoHotUpdateDllNames.Concat(new List<string>
         {
             // 这里放除了s_monoHotUpdateDllNames以外的脚本不需要挂到资源上的dll列表
-            "HotFix2.dll",
         }).ToList();
 
         public int callbackOrder => 0;
@@ -94,7 +94,25 @@ namespace HuaTuo
 #else
         public void OnPostprocessBuild(BuildReport report)
         {
-            AddBackHotFixAssembliesToJson(report, report.summary.outputPath);
+            try
+            {
+                AddBackHotFixAssembliesToJson(report, report.summary.outputPath);
+            
+                string[] files = Directory.GetFiles(Path.GetDirectoryName(report.summary.outputPath), "CMakeLists.txt", SearchOption.AllDirectories);
+
+                foreach (var file in files)
+                {
+                    var text = File.ReadAllText(file);
+                    text = "set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../../)\n" + text;
+                    text = Regex.Replace(text, @"\/Yupch\-(c|cpp)\.(h|hpp) \/Fp\\\"".*\\\\[a-zA-Z0-9]+\.pch\\\""", "");
+                    
+                    File.WriteAllText(file, text);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new BuildFailedException(e);
+            }
         }
 #endif
 
