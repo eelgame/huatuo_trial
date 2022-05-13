@@ -19,7 +19,7 @@ using UnityEditor.Android;
 
 namespace HuaTuo
 {
-    public class HuaTuo_BuildProcessor_2020_1_OR_NEWER : IPreprocessBuildWithReport
+    public class HuaTuo_BuildProcessor_2020_1_OR_NEWER : IPreprocessBuildWithReport, IIl2CppProcessor
 #if UNITY_ANDROID
         , IPostGenerateGradleAndroidProject
 #else
@@ -27,6 +27,22 @@ namespace HuaTuo
 #endif
         , IProcessSceneWithReport, IFilterBuildAssemblies, IPostBuildPlayerScriptDLLs, IUnityLinkerProcessor
     {
+        
+        public void OnBeforeConvertRun(BuildReport report, Il2CppBuildPipelineData data)
+        {
+            try
+            {
+                foreach (var name in s_allHotUpdateDllNames)
+                {
+                    File.Move("Temp/StagingArea/Data/Managed/" + name, "Temp/StagingArea/Data/Managed/_cheat_" + name);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new BuildFailedException(e);
+            }
+        }
+        
         /// <summary>
         /// 需要在Prefab上挂脚本的热更dll名称列表，不需要挂到Prefab上的脚本可以不放在这里
         /// 但放在这里的dll即使勾选了 AnyPlatform 也会在打包过程中被排除
@@ -58,7 +74,6 @@ namespace HuaTuo
         public string[] OnFilterAssemblies(BuildOptions buildOptions, string[] assemblies)
         {
             // 将热更dll从打包列表中移除
-            // return assemblies.Where(ass => s_allHotUpdateDllNames.All(dll => !ass.EndsWith(dll, StringComparison.OrdinalIgnoreCase))).ToArray();
             return assemblies;
         }
 
@@ -124,22 +139,7 @@ namespace HuaTuo
 
         public void OnPostBuildPlayerScriptDLLs(BuildReport report)
         {
-            try
-            {
-                var path = Path.Combine(Environment.CurrentDirectory, "Temp/StagingArea/Data/Managed/HotFix2.dll");
-                var readerParameters = new ReaderParameters();
-                readerParameters.InMemory = true;
-                using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(path, readerParameters))
-                {
-                    assemblyDefinition.Name = new AssemblyNameDefinition("_cheat_" + assemblyDefinition.Name.Name,
-                        assemblyDefinition.Name.Version);
-                    assemblyDefinition.Write(path);
-                }
-            }
-            catch (Exception e)
-            {
-                throw new BuildFailedException(e);
-            }
+
         }
 
         public string GenerateAdditionalLinkXmlFile(BuildReport report, UnityLinkerBuildPipelineData data)
