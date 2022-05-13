@@ -11,6 +11,7 @@ using System.IO;
 using System;
 using UnityEditor.UnityLinker;
 using System.Reflection;
+using Mono.Cecil;
 using UnityEditor.Il2Cpp;
 #if UNITY_ANDROID
 using UnityEditor.Android;
@@ -57,7 +58,8 @@ namespace HuaTuo
         public string[] OnFilterAssemblies(BuildOptions buildOptions, string[] assemblies)
         {
             // 将热更dll从打包列表中移除
-            return assemblies.Where(ass => s_allHotUpdateDllNames.All(dll => !ass.EndsWith(dll, StringComparison.OrdinalIgnoreCase))).ToArray();
+            // return assemblies.Where(ass => s_allHotUpdateDllNames.All(dll => !ass.EndsWith(dll, StringComparison.OrdinalIgnoreCase))).ToArray();
+            return assemblies;
         }
 
 
@@ -122,7 +124,22 @@ namespace HuaTuo
 
         public void OnPostBuildPlayerScriptDLLs(BuildReport report)
         {
-
+            try
+            {
+                var path = Path.Combine(Environment.CurrentDirectory, "Temp/StagingArea/Data/Managed/HotFix2.dll");
+                var readerParameters = new ReaderParameters();
+                readerParameters.InMemory = true;
+                using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(path, readerParameters))
+                {
+                    assemblyDefinition.Name = new AssemblyNameDefinition("_cheat_" + assemblyDefinition.Name.Name,
+                        assemblyDefinition.Name.Version);
+                    assemblyDefinition.Write(path);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new BuildFailedException(e);
+            }
         }
 
         public string GenerateAdditionalLinkXmlFile(BuildReport report, UnityLinkerBuildPipelineData data)
