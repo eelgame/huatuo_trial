@@ -12,7 +12,6 @@ using System;
 using UnityEditor.UnityLinker;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Mono.Cecil;
 using UnityEditor.Il2Cpp;
 #if UNITY_ANDROID
 using UnityEditor.Android;
